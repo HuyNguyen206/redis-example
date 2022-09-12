@@ -26,3 +26,17 @@ Route::get('/videos/download/{id}', function ($id) {
      return back();
 });
 
+Route::get('/articles/all', function () { // sort by most viewed articles
+    $articles = RedisAlias::zrevrange('articles_trending', 0, 3);
+    $articlesHydrate = \App\Models\Article::query()->hydrate(array_map('json_decode', $articles));
+
+    return $articlesHydrate;
+});
+
+Route::get('/articles/{article}', function (\App\Models\Article $article) {
+    RedisAlias::zincrby('articles_trending', 1, $article->toJson());
+
+    return $article;
+});
+
+
